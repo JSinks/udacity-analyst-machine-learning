@@ -1,14 +1,12 @@
 # Fraud Identification - Udacity Machine Learning project
 
 ## Overview
----
 The goal of this project is to analyse the data set made available as a result of the Enron fraud case from the 2000's, and attempt to identify patterns in the data that can assist in the prediction of future fraud cases in similar industries. In order to help identify the patterns and validate results, I have used a number of machine learning techniques to attempt to automatically classify individuals into either "Person of Interest" or "Non Person of Interest" categories based on financial and communication (email) data.
 
 The remainder of this document outlines how I went about this analysis and what the result of my findings were.
 
 
 ## Available Data
----
 The data set originally made available contains a fair amount of information about the Enron conspirators as well as a number of other employees. Some summary statistics for the data set:
 
 * 146 records are available in the data
@@ -28,31 +26,30 @@ In analysing the data, 3 outliers were identified that must be removed before an
 
 In addition, please refer to the following table for some interesting information regarding sparsity of the remaining features:
 
-Feature | Unique Values | Null Values
---- | --- | --- | ---:
+Feature | Unique Values | Null Values |
+--- | ---: | ---: |
 salary | 94 | 49 | 
 to_messages | 87 | 57 | 
 deferral_payments | 39 | 105 | 
 loan_advances | 4 | 140 | 
 bonus | 41 | 62 | 
-restricted_stock_deferred | 18 | 126 | 
+restricted_stock_deferred | 18 | 126 |
 deferred_income | 44 | 95 | 
-total_stock_value | 124  | 18 | 
+total_stock_value | 124  | 18 |
 expenses | 94 | 49 | 
-from_poi_to_this_person | 57 | 69 | 
+from_poi_to_this_person | 57 | 69 |
 exercised_stock_options | 101 | 42 | 
-from_messages | 65 | 57 | 
+from_messages | 65 | 57 |
 other | 91 | 52 | 
-from_this_person_to_poi | 41 | 77 | 
+from_this_person_to_poi | 41 | 77 |
 long_term_incentives | 52 | 78 | 
-shared_receipt_with_poi | 84 | 57 | 
+shared_receipt_with_poi | 84 | 57 |
 restricted_stock | 91 | 34 | 
-director_fees | 17 | 127 | 
+director_fees | 17 | 127 |
 
 I also found in the data there were 2 sets of typos that existed for BELFER ROBERT and BHATNAGAR SANJAY which transposed data into the wrong columns. I manually corrected this error using data from the provided PDF to ensure that the information being used in the model is as accurate as possible.
 
 ## Feature Selection / Feature Engineering
----
 To improve the effectiveness of my machine learning models, I needed to reduce the diversity of features that I made available. Instead of manually analysing every feature individually, I allowed the classifier search to select between PCA (primary component identification) across the full feature set, or SelectKBest - tuned for what would deliver a maximal f1 value (proxy for recall and precision). The highest performing classifier was a Nearest Centroid leveraging SelectKBest for dimensionality reduction.
 
 The most performant model (Nearest Centriod) leveraged SelectKBest to assist in selection of the most performant features, with 15 features chosen in total. The features selected and their ranks are noted below.
@@ -95,7 +92,6 @@ As a result, I excluded them from the final optimised classifier.
 
 
 ## Algorithm Selection
----
 The algorithm was autmatically selected by GridSearchCV, and the results of all the competing algorithm's can be seen below. I setup the GridSearch to optimise for f1 performance of the model to attempt to maximise for a combination of accuracy and precision which were the stated outcomes for this project.
 
 Algorithm | Run time | Accuracy | Precision | Recall | F1 | Winner
@@ -111,7 +107,6 @@ Items with an * next to them above were run in multi-core mode individually to s
 Items with a + performed better with my new features left in place, and the scores above reflect that.
 
 ## Parameter Tuning
----
 Tuning refers to changing parameters of the selected algorithm to adjust how the model works and interacts with the provided data. If you do it wrong, you can end up negatively impacting the performance of your model. I tuned using GridSearch and a parameter dictionary, to automatically adjust and find the best combination of features that maximised for f1 (a proxy for recall + precision scores that we were aiming for).
 
 Different parameters were tuned in each of the classifiers noted above. The below outlines all the testing performed.
@@ -177,7 +172,6 @@ Number estimators | [25, 50, 75, 100, 500] | 100
 
 
 ## Model Validation
----
 Validation refers to how you confirm that your model is predictive of the outcome as desired - either through splitting your data into training/testing sets, or through a form of cross-validation. A classic validation mistake is not splitting your data and testing directly on the same data that you trained on - causing wildly inaccurate (overstated) results.
 
 Given the very small amount of data that was available for training and testing (146 records), a classic single train/test split was not advisable as we could introduce bias into the training or testing data sets by pure luck given that only 12% of the entries were true-positives. Therefore using a cross-validation / k-fold technique like StratifiedShuffleSplit was important as it allowed the training data to be cycled many times in small batches to train the model more thoroughly, and allow the biases in the dat to be averaged out over time.
@@ -188,7 +182,6 @@ This model was used in both the final tester.py class as well as in my GridSearc
 
 
 ## Model Evaluation
----
 The goal of this project was to lift recall and precision above a threshold (0.3), in real terms this meant that I wanted to incorrectly accuse individuals of fraud less than 70% of the time (also known as a false positive) as well as incorrectly missing true-fraud (e.g. not calling someone a fraudster who actually is) less than 70% of the time.
 
 In the final model that was submitted for this project, I ended up with the following average performances from the best model:
