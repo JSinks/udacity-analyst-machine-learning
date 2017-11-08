@@ -37,8 +37,4 @@ aS'restricted_stock'
 p18
 aS'director_fees'
 p19
-aS'from_poi_pct'
-p20
-aS'to_poi_pct'
-p21
 a.

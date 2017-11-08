@@ -53,36 +53,45 @@ I also found in the data there were 2 sets of typos that existed for BELFER ROBE
 
 ## Feature Selection / Feature Engineering
 ---
-To improve the effectiveness of my machine learning models, I needed to reduce the diversity of features that I made available. Instead of manually analysing every feature individually, I allowed the classifier search to select between PCA (primary component identification) across the full feature set, or SelectKBest - tuned for what would deliver a maximal f1 value (proxy for recall and precision). The highest performing classifier was a <classifier name> leveraging <function> for dimensionality reduction.
+To improve the effectiveness of my machine learning models, I needed to reduce the diversity of features that I made available. Instead of manually analysing every feature individually, I allowed the classifier search to select between PCA (primary component identification) across the full feature set, or SelectKBest - tuned for what would deliver a maximal f1 value (proxy for recall and precision). The highest performing classifier was a Nearest Centroid leveraging SelectKBest for dimensionality reduction.
 
-This would analyse each features contribution to the model and only select the 8-10 most impactful features - re; the 8-10 range refer to the tuning selection below for details on the final value selected in this range.
+The most performant model (Nearest Centriod) leveraged SelectKBest to assist in selection of the most performant features, with 15 features chosen in total. The features selected and their ranks are noted below.
 
-<!-- TODO, add score values in for each feature -->
 Feature | Score | Selected?
 --- | --- | ---:
-salary  |  | YES
-bonus  |  | YES 
-deferred_income   |  | YES
-exercised_stock_options | | YES
-shared_receipt_with_poi | | YES
-total_payments | | YES
-total_stock_value | |  YES
-to_poi_pct | | YES
-shared_receipt_with_poi | | YES
+total_stock_value | 14.689864354826572 | True
+exercised_stock_options | 13.714161147390753 | True
+salary | 11.196268305382173 | True
+bonus | 11.129479151071294 | True
+restricted_stock | 6.5727016131222769 | True
+deferred_income | 5.2791102364442963 | True
+expenses | 5.8987344206928967 | True
+shared_receipt_with_poi | 5.495321379933408 | True
+from_poi_to_this_person | 3.5906800150961415 | True
+long_term_incentive | 2.611274332028505 | True
+from_this_person_to_poi | 2.1438408958291655 | True
+director_fees | 1.9616084482924003 | True
+restricted_stock_deferred | 0.79383448019021663 | True
+to_messages | 0.68481475854756191 | True
+deferral_payments | 0.26396796392070854 | True
+loan_advances | 0.19714881780250351 | False
+from_messages | 0.17138368605383292 | False
+other | 0.014163413206358109 | False
 
-Based purely on the classifier types, scaling was not relevant for my model (as the GridSearch had to choose from classifiers that do not benefit from scaled data). However as I used PCA to further reduce the dimensionality of my data, I had to normalise all of the remaining feature values to ensure that large values did not grossly outweigh smaller values (e.g. comparing salary data to number of emails received. To do so, I used a QuantileTransformer which would reduce the impact of outliers and strive for a roughly normal distribution.
+
+Based purely on the classifier types, scaling was not relevant for my model (as the GridSearch had to choose from classifiers that do not benefit from scaled data). However as I used PCA to further reduce the dimensionality of my data, I had to normalise all of the remaining feature values to ensure that large values did not grossly outweigh smaller values (e.g. comparing salary data to number of emails received. To do so, I used an absolute value scaler which ensured that having negative values in some fields would not impact the component selection.
 
 In addition to the existing features, I identified and engineered 2 of my own feaures - converting the number of emails sent to/from a person of interest to a percentage of the total emails that person has sent or received. This value would logically seem to be of more interest than an absolute value of emails as it allows more ready comparison between actors regardless of how heavily the individual uses email.
 
-I ran my optimised models (see below) both with and without my features to determine whether they would be selected by SelectKBest and what scale of impact they would have on the resulting model scores.
+I ran my optimised models (see below) both with and without my features to determine whether they would be selected by SelectKBest and what scale of impact they would have on the resulting model scores. Here are the statistics for the most successful classifier both with and without my engineered features.
 
-Type | Accuracy | Precision | Recall | F1 | Winner?
---- | ---: | ---: | ---: | ---: | :---:
-With my features | tbc | tbc | tbc | tbc | tbc
-Without my features | tbc | tbc | tbc | tbc | tbc
+Type | Model | Accuracy | Precision | Recall | F1 
+--- | --- | ---: | ---: | ---: | :---:
+With my features | Nearest Centroid | **0.77680** | **0.33014** | 0.65500 | 0.43901
+Without my features | Nearest Centroid | 0.74713 | 0.31311 | **0.75100** | **0.44196**
 
-As a result of the data above, even though I included the features in my feature_list, they were dropped from my mdoel by SelectKBest in the final pipeline.
-<!--- TODO train 2 classifier sets, one with the new features and one without - and compare the results-->
+Based on the statistics above, the best classifier with and without my features remains the same, but performance improves if I exclude the features.
+As a result, I excluded them from the final optimised classifier.
 
 
 ## Algorithm Selection
@@ -91,13 +100,15 @@ The algorithm was autmatically selected by GridSearchCV, and the results of all 
 
 Algorithm | Run time | Accuracy | Precision | Recall | F1 | Winner
 --- | :---: | ---: | ---: | ---: | ---: | :---:
-GaussianNB | 5.6s | 0.84853 | 0.41807 | 0.34700 | 0.37923 | No
-KNearestNeighbors | 208.1s | 0.84107 | 0.32609 | 0.18000 | 0.23196 | No
-NearestCentroid | 298.4s | 0.77680 | 0.33014 | 0.65500 | 0.43901 | Yes
-DecisionTree | 756.6s | 0.85327 | 0.44254 | 0.38700 | 0.41291 | No
-RandomForest |  |  |  |  |  |  |
-AdaBoost |  |  |  |  |  |  |
+GaussianNB+ | 5.6s | 0.84853 | 0.41807 | 0.34700 | 0.37923 | No
+KNearestNeighbors | 208.1s | 0.88587 | 0.70168 | 0.25050 | 0.36920 | No
+NearestCentroid | 298.4s | 0.74713 | 0.31311 | **0.75100** | **0.44196** | **Yes**
+DecisionTree | 756.6s | 0.85327 | **0.44254** | 0.38700 | 0.41291 | No
+RandomForest+ | 916.7s* | **0.85613** | 0.39793 | 0.15400 | 0.22206 | No |
+AdaBoost+ | 519.8s* | 0.83713 | 0.36403 | 0.29650 | 0.32681 | No
 
+Items with an * next to them above were run in multi-core mode individually to speed up processing time.
+Items with a + performed better with my new features left in place, and the scores above reflect that.
 
 ## Parameter Tuning
 ---
@@ -134,11 +145,10 @@ Number features (dim reduction) | range(2, 21) | 6
 Distance Metric | ['cityblock', 'cosine', 'euclidean', 'l1', 'l2', 'manhattan'] | manhattan
 Shrink Threshold |[None, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] | 5
 
-**DecisionTree (8, 208 combinations)**
+**DecisionTree (4,104 combinations)**
 
 Parameter Tested | Tested Values | Optimal Value
 --- | --- | ---
-Scaler | [None, MaxAbsScaler()] | None
 Dimensionality Reducer | [PCA(), SelectKBest()] | SelectKBest
 Number features (dim reduction) | range(2, 21) | 13
 Split quality criteria | ['entropy', 'gini'] | entropy
@@ -146,26 +156,24 @@ Split strategy | ['random', 'best'] | best
 Minimum split samples | range(2, 20, 2) | 16
 Max tree features | ['sqrt','log2', None] | None (all) 
 
-**RandomForest (8,208 combinations)**
+**RandomForest (5,130 combinations)**
 
 Parameter Tested | Tested Values | Optimal Value
 --- | --- | ---
-Scaler | [None, MaxAbsScaler()] | 
-Dimensionality Reducer | [PCA(), SelectKBest()] |
-Number features (dim reduction) | range(2, 21) | 
-Number estimators | [5, 10, 20, 50] | 
-Split quality criteria | ['entropy', 'gini'] | 
-Minimum split samples | range(2, 20, 2) | 
-Max tree features | ['auto','sqrt','log2', None] | 
+Dimensionality Reducer | [PCA(), SelectKBest()] | SelectKBest
+Number features (dim reduction) | range(2, 21) | 14
+Number estimators | [5, 10, 15, 20, 25] | 5
+Split quality criteria | ['entropy', 'gini'] | gini
+Minimum split samples | range(2, 20, 2) | 12
+Max tree features | ['sqrt','log2', None] | sqrt 
 
-**AdaBoost (380 combinations)**
+**AdaBoost (190 combinations)**
 
 Parameter Tested | Tested Values | Optimal Value
 --- | --- | ---
-Scaler | [None, MaxAbsScaler()] | 
-Dimensionality Reducer | [PCA(), SelectKBest()] |
-Number features (dim reduction) | range(2, 21) | 
-Number estimators | [25, 50, 75, 100, 500] | 
+Dimensionality Reducer | [PCA(), SelectKBest()] | SelectKBest
+Number features (dim reduction) | range(2, 21) | 9
+Number estimators | [25, 50, 75, 100, 500] | 100
 
 
 ## Model Validation
@@ -184,5 +192,5 @@ This model was used in both the final tester.py class as well as in my GridSearc
 The goal of this project was to lift recall and precision above a threshold (0.3), in real terms this meant that I wanted to incorrectly accuse individuals of fraud less than 70% of the time (also known as a false positive) as well as incorrectly missing true-fraud (e.g. not calling someone a fraudster who actually is) less than 70% of the time.
 
 In the final model that was submitted for this project, I ended up with the following average performances from the best model:
-* Recall: x.xxxx -> meaning the model missed out on identifying x% of fraudsters
-* Precision: x.xxxx -> meaning the model incorrectly tagged x% of entries as fraudsters who were innocent
+* Recall: 0.31311 -> meaning the model missed out on correctly identifying 68.7% of fraudsters
+* Precision: 0.75100 -> meaning the model incorrectly tagged only 24.9% of entries as fraudsters who were innocent

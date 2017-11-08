@@ -168,7 +168,7 @@ def find_best_estimator_for_grid(classifier, pipe, params, data_set, feature_lis
     print('')
 
     start = time.time()
-    print(start)
+    print('Started at {time}'.format(time=time.strftime("%H:%M:%S")))
     print('')
 
     np.random.seed(0)
@@ -207,9 +207,6 @@ def find_best_estimator_for_grid(classifier, pipe, params, data_set, feature_lis
     end = time.time()
     log_time_to_complete(classifier, start, end)
 
-    # Wait 60 seconds between runs, if this helps with the cores issue?
-    time.sleep(60)
-
     return new_estimator, new_score
 
 
@@ -224,7 +221,7 @@ features_list = [
     'salary', 'to_messages', 'deferral_payments', 'loan_advances', 'bonus', 'restricted_stock_deferred',
     'deferred_income', 'total_stock_value', 'expenses', 'from_poi_to_this_person', 'exercised_stock_options',
     'from_messages', 'other','from_this_person_to_poi', 'long_term_incentive', 'shared_receipt_with_poi',
-    'restricted_stock', 'director_fees', 'from_poi_pct', 'to_poi_pct'
+    'restricted_stock', 'director_fees'
 ]
 
 # Load the dictionary containing the dataset
@@ -266,7 +263,7 @@ best_score = 0.
 
 # Hyperparameter tuning tests
 # General parameters (all classifiers)
-n_features = range(2, 21)
+n_features = range(2, 19)
 scalers = [None, MaxAbsScaler()]
 
 # KNearestNeighbor parameters
@@ -285,7 +282,7 @@ tree_min_splits = range(2, 20, 2)
 tree_max_features = ['sqrt', 'log2', None]
 
 # RandomForest parameters
-forest_estimators = [5, 10, 20, 50]
+forest_estimators = [5, 10, 15, 20, 25]
 
 # AdaBoost parameters
 boost_estimators = [25, 50, 75, 100, 500]
@@ -375,13 +372,11 @@ best_estimator, best_score = find_best_estimator_for_grid('NearestCentroid', pip
 #  Now try DecisionTree
 ####
 pipe = Pipeline([
-    ('scale', MaxAbsScaler()),
     ('reduce_dim', PCA(random_state=42)),
     ('clf', DecisionTreeClassifier(random_state=42))
 ])
 param_grid = [
     {
-        'scale': scalers,
         'reduce_dim': [PCA(random_state=42)],
         'reduce_dim__n_components': n_features,
         'clf__criterion': tree_criterion,
@@ -390,7 +385,6 @@ param_grid = [
         'clf__min_samples_split': tree_min_splits
     },
     {
-        'scale': scalers,
         'reduce_dim': [SelectKBest()],
         'reduce_dim__k': n_features,
         'clf__criterion': tree_criterion,
@@ -407,13 +401,11 @@ best_estimator, best_score = find_best_estimator_for_grid('DecisionTree', pipe, 
 #  Now try RandomForest
 ####
 pipe = Pipeline([
-    ('scale', MaxAbsScaler()),
     ('reduce_dim', PCA(random_state=42)),
     ('clf', RandomForestClassifier(random_state=42))
 ])
 param_grid = [
     {
-        'scale': scalers,
         'reduce_dim': [PCA(random_state=42)],
         'reduce_dim__n_components': n_features,
         'clf__n_estimators': forest_estimators,
@@ -421,7 +413,6 @@ param_grid = [
         'clf__min_samples_split': tree_min_splits
     },
     {
-        'scale': scalers,
         'reduce_dim': [SelectKBest()],
         'reduce_dim__k': n_features,
         'clf__n_estimators': forest_estimators,
@@ -430,13 +421,12 @@ param_grid = [
     }
 ]
 
-best_estimator, best_score = find_best_estimator_for_grid('RandomForest', pipe, param_grid, my_dataset, features_list, best_score, best_estimator)
+# best_estimator, best_score = find_best_estimator_for_grid('RandomForest', pipe, param_grid, my_dataset, features_list, best_score, best_estimator)
 
 ####
 #  Now try AdaBoost
 ####
 pipe = Pipeline([
-    ('scale', MaxAbsScaler()),
     ('reduce_dim', PCA(random_state=42)),
     ('clf', AdaBoostClassifier(random_state=42))
 ])
@@ -453,7 +443,7 @@ param_grid = [
     }
 ]
 
-best_estimator, best_score = find_best_estimator_for_grid('AdaBoost', pipe, param_grid, my_dataset, features_list, best_score, best_estimator)
+# best_estimator, best_score = find_best_estimator_for_grid('AdaBoost', pipe, param_grid, my_dataset, features_list, best_score, best_estimator)
 
 ####
 # Write out the details of the absolutely best estimator and the score received (f1 value)
