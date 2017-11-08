@@ -185,5 +185,7 @@ This model was used in both the final tester.py class as well as in my GridSearc
 The goal of this project was to lift recall and precision above a threshold (0.3), in real terms this meant that I wanted to incorrectly accuse individuals of fraud less than 70% of the time (also known as a false positive) as well as incorrectly missing true-fraud (e.g. not calling someone a fraudster who actually is) less than 70% of the time.
 
 In the final model that was submitted for this project, I ended up with the following average performances from the best model:
-* Recall: 0.31311 -> meaning the model missed out on correctly identifying 68.7% of fraudsters
-* Precision: 0.75100 -> meaning the model incorrectly tagged only 24.9% of entries as fraudsters who were innocent
+* Precision: 0.75100
+* Recall: 0.31311
+
+In human readable terms, this means that we had 75.1% certainty that the people that we picked as POIs were actually POIs (as measured by the precision metric). However based on our recall figure of 0.31311, that means we only identified 31.3% of the possible POIs (letting ~68.7% of fraudsters get away with their crime).
