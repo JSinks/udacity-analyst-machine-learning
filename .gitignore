@@ -1,2 +1,5 @@
 emails_by_address
 __pycache__
+*.zip
+final_project_dataset_modified.pkl
+my_classifier_bkp.pkl
